@@ -4,6 +4,8 @@
   "description": "Turn Wise - Smart, Accessible & AI-Powered Indoor Navigation for KSR Bengaluru Railway Station",
   "scripts": {
     "validate-data": "python scripts/validate_graph.py",
+    "build": "bash scripts/build_web.sh",
+    "build:web": "bash scripts/build_web.sh",
     "test": "node --test server/dist/test_endpoints.js",
     "test:indoor-nav": "node ./server/node_modules/tsx/dist/cli.mjs scripts/test_indoor_nav.ts",
     "test:boardingsure": "node ./server/node_modules/tsx/dist/cli.mjs scripts/test_boardingsure.ts",
