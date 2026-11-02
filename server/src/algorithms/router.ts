@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { resolveDataDir } from '../utils/dataResolver';
 
 export interface Coordinates {
   x: number;
@@ -195,7 +196,7 @@ export class StationRouter {
   public config: any = {};
 
   constructor(dataBasePath?: string) {
-    const base = dataBasePath || path.resolve(__dirname, '../../../data');
+    const base = resolveDataDir(dataBasePath);
     this.loadData(base);
   }
 

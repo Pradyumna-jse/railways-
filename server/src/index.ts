@@ -388,13 +388,40 @@ app.get('/api/train/:trainNumber', (req: Request, res: Response) => {
   res.json(train);
 });
 
+// Root welcome & API catalog
+app.get('/', (req: Request, res: Response) => {
+  res.json({
+    status: 'online',
+    service: 'Turn Wise Railway Backend API',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/health',
+      station: '/api/station',
+      platforms: '/api/platforms',
+      facilities: '/api/facilities',
+      nodes: '/api/nodes',
+      status: '/api/status',
+      incidents: '/api/incidents',
+      trains: '/api/trains',
+      route: 'POST /api/route',
+      assistant: 'POST /api/assistant'
+    }
+  });
+});
+
 // Health check
 app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', service: 'Turn Wise API', timestamp: new Date().toISOString() });
 });
 
-app.listen(PORT, () => {
-  console.log(`====================================================`);
-  console.log(`🚆 Turn Wise Backend Server running on port ${PORT}`);
-  console.log(`====================================================`);
-});
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`====================================================`);
+    console.log(`🚆 Turn Wise Backend Server running on port ${PORT}`);
+    console.log(`====================================================`);
+  });
+}
+
+export default app;
+export { app };

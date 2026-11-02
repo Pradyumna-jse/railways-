@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { StationRouter, StationNode, RouteResult, IncidentReport, KSR_TRAIN_DATABASE } from '../algorithms/router';
+import { resolveDataDir } from '../utils/dataResolver';
 
 export class StationService {
   private baseDir: string;
@@ -18,7 +19,7 @@ export class StationService {
   private stationSchedules: Record<string, any[]> = {};
 
   constructor(baseDir?: string) {
-    this.baseDir = baseDir || path.resolve(__dirname, '../../../data');
+    this.baseDir = resolveDataDir(baseDir);
     this.router = new StationRouter(this.baseDir);
     this.loadStationData();
   }
