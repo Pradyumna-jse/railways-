@@ -40,3 +40,4 @@ fi
 echo "=== Build Complete! Verified output directories ==="
 ls -la dist 2>/dev/null || true
 ls -la mobile/dist 2>/dev/null || true
+
