@@ -1,87 +1,51 @@
-# 🚀 RailMarga Production Deployment Guide
+# 🚆 TurnWise (RailMarga) Production Deployments
 
-RailMarga is architected as a decoupled system:
-1. **Frontend**: Static Progressive Web App (Expo / React Native Web) deployed to **Vercel**.
-2. **Backend**: Express TypeScript API + Grounded Gemini Assistant deployed to **Render** (or **Railway**).
+Both the **Frontend (PWA)** and **Backend (API)** are deployed live in production:
+
+| Service | Technology | Production Live URL | Health / Test Endpoint |
+| :--- | :--- | :--- | :--- |
+| **Backend API** | Express TypeScript Serverless | [https://server-pi-six-57.vercel.app](https://server-pi-six-57.vercel.app) | [`/health`](https://server-pi-six-57.vercel.app/health) · [`/api/station`](https://server-pi-six-57.vercel.app/api/station) |
+| **Frontend PWA** | Expo / React Native Web | [https://mobile-sigma-eight.vercel.app](https://mobile-sigma-eight.vercel.app) | [`/`](https://mobile-sigma-eight.vercel.app) |
+| **GitHub Repo** | Git Monorepo | [https://github.com/Pradyumna-jse/railways-](https://github.com/Pradyumna-jse/railways-) | Branch `main` |
 
 ---
 
-## 🛠️ Part 1: Deploy Backend to Render (Free Tier)
+## 🛠️ Backend API Endpoints
 
-Render automatically detects the [`render.yaml`](./render.yaml) blueprint in this repository.
+The backend is fully live and serves all railway navigation and intelligence endpoints:
 
-### Option A: Using Render Blueprints (Recommended)
-1. Go to [dashboard.render.com](https://dashboard.render.com/) and sign in with GitHub.
-2. Click **New +** → **Blueprint**.
-3. Select the repository: `Pradyumna-jse/railways-`.
-4. Render will read `render.yaml` and configure the `railways-backend` service:
+- `GET /` — Service overview and API catalog
+- `GET /health` — Service health check
+- `GET /api/station` — Krantivira Sangolli Rayanna (Bengaluru Railway Station) metadata, viewBox, and levels
+- `GET /api/platforms` — All 10 platforms with real-world spatial coordinates
+- `GET /api/facilities` — Station amenities (waiting rooms, ticket counters, restrooms, lifts, escalators)
+- `GET /api/nodes` — Graph nodes for indoor routing
+- `GET /api/status` — Live facility availability engine (Lifts, Escalators, Ramps)
+- `GET /api/incidents` — Passenger and staff crowd & maintenance incident reports
+- `GET /api/trains` — All-India train search and coach compositions
+- `POST /api/route` — Mathematical graph routing with obstacle avoidance & profile weights:
+  ```json
+  {
+    "startNodeId": "node_entry_t1_main_east",
+    "destinationNodeId": "node_pf8_center",
+    "profileId": "wheelchair"
+  }
+  ```
+- `POST /api/route/coach` — Direct platform walking route to specific coach (e.g. Coach B4)
+- `POST /api/assistant` — Multilingual Grounded Gemini Assistant (English, Kannada, Hindi)
+
+---
+
+## 🌐 Deploy to Render (Alternative Web Service)
+
+If you prefer to run a continuous long-polling Docker/Node.js instance on Render, the repository is already pre-configured with [`render.yaml`](./render.yaml):
+
+1. Go to [dashboard.render.com](https://dashboard.render.com/) and click **New +** → **Blueprint**.
+2. Select repository `Pradyumna-jse/railways-`.
+3. Render automatically reads `render.yaml`:
    - **Root Directory**: `server`
    - **Build Command**: `npm install && npm run build`
    - **Start Command**: `npm start`
    - **Health Check Path**: `/health`
-5. In the Environment Variables section, add:
-   - `GEMINI_API_KEY`: *(Your Google Gemini API Key from Google AI Studio)*
-6. Click **Apply**.
-7. Once deployed, copy your backend URL:
-   `https://railways-backend.onrender.com`
-
-### Option B: Manual Web Service on Render
-1. Click **New +** → **Web Service**.
-2. Connect `Pradyumna-jse/railways-`.
-3. Set the following parameters:
-   - **Root Directory**: `server`
-   - **Environment**: `Node`
-   - **Build Command**: `npm install && npm run build`
-   - **Start Command**: `npm start`
-   - **Health Check Path**: `/health`
-4. Add Environment Variable:
-   - `GEMINI_API_KEY`: `your_key_here`
-5. Click **Create Web Service**.
-
----
-
-## 🌐 Part 2: Deploy Frontend to Vercel
-
-Vercel will build and serve the optimized static web bundle with instant global CDN caching.
-
-1. Go to [vercel.com](https://vercel.com/) and click **Add New...** → **Project**.
-2. Import the repository: `Pradyumna-jse/railways-`.
-3. Configure Project Settings:
-   - **Framework Preset**: `Other`
-   - **Root Directory**: `./` *(leave default root)*
-   - **Build Command**: `npm run build:web`
-   - **Output Directory**: `mobile/dist`
-4. In **Environment Variables**, add:
-   - `EXPO_PUBLIC_API_URL`: `https://railways-backend.onrender.com` *(Replace with your actual Render URL from Part 1)*
-5. Click **Deploy**.
-6. Vercel will bundle the app and provide a live URL like `https://railways-navigation.vercel.app`.
-
----
-
-## 🚂 Alternate: Deploy Backend to Railway
-
-1. Go to [railway.app](https://railway.app/) and click **New Project** → **Deploy from GitHub repo**.
-2. Select `Pradyumna-jse/railways-`.
-3. In **Settings**:
-   - **Root Directory**: `/server`
-   - **Build Command**: `npm install && npm run build`
-   - **Start Command**: `npm start`
-4. In **Variables**:
-   - `PORT`: `3000`
-   - `GEMINI_API_KEY`: `your_key_here`
-5. Generate a Public Domain under **Networking** (e.g., `https://railmarga-production.up.railway.app`).
-6. Point `EXPO_PUBLIC_API_URL` on Vercel to this Railway domain.
-
----
-
-## 🔍 Verification & Health Checks
-
-1. Test Backend Health:
-   ```bash
-   curl https://your-backend-url.onrender.com/health
-   # Response: {"status":"ok","service":"RailMarga API"}
-   ```
-
-2. Open Frontend:
-   - Open your Vercel URL in any desktop or mobile browser.
-   - The app will automatically connect to your Render backend, enabling real-time multi-floor pathfinding and the conversational Gemini Assistant!
+4. Set `GEMINI_API_KEY` in environment variables.
+5. Click **Apply**.

@@ -11,8 +11,10 @@ import stationSchedulesData from '../data/realtime/station_schedules.json';
 import trainsBundle from '../data/realtime/trains_bundle.json';
 
 const ENV_BACKEND_URL = process.env.EXPO_PUBLIC_API_URL ? process.env.EXPO_PUBLIC_API_URL.replace(/\/+$/, '') : '';
+const PRODUCTION_BACKEND_URL = 'https://server-pi-six-57.vercel.app';
 const CANDIDATE_URLS = [
   ENV_BACKEND_URL,
+  PRODUCTION_BACKEND_URL,
   'http://localhost:3000',
   'http://127.0.0.1:3000',
   'http://10.0.2.2:3000'
@@ -20,7 +22,7 @@ const CANDIDATE_URLS = [
 
 export class ApiService {
   private isOnlineState: boolean = true;
-  private backendBaseUrl: string = ENV_BACKEND_URL || 'http://localhost:3000';
+  private backendBaseUrl: string = ENV_BACKEND_URL || PRODUCTION_BACKEND_URL;
 
   constructor() {
     this.checkConnectivity();
