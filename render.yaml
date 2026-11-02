@@ -1,7 +1,7 @@
 services:
-  # RailMarga Node.js & TypeScript Backend API
+  # TurnWise / Railways Node.js & TypeScript Backend API
   - type: web
-    name: railmarga-backend
+    name: railways-backend
     env: node
     plan: free
     rootDir: server

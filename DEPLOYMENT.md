@@ -13,8 +13,8 @@ Render automatically detects the [`render.yaml`](./render.yaml) blueprint in thi
 ### Option A: Using Render Blueprints (Recommended)
 1. Go to [dashboard.render.com](https://dashboard.render.com/) and sign in with GitHub.
 2. Click **New +** → **Blueprint**.
-3. Select the repository: `Anvation-2026/RailMarga`.
-4. Render will read `render.yaml` and configure the `railmarga-backend` service:
+3. Select the repository: `Pradyumna-jse/railways-`.
+4. Render will read `render.yaml` and configure the `railways-backend` service:
    - **Root Directory**: `server`
    - **Build Command**: `npm install && npm run build`
    - **Start Command**: `npm start`
@@ -23,11 +23,11 @@ Render automatically detects the [`render.yaml`](./render.yaml) blueprint in thi
    - `GEMINI_API_KEY`: *(Your Google Gemini API Key from Google AI Studio)*
 6. Click **Apply**.
 7. Once deployed, copy your backend URL:
-   `https://railmarga-backend.onrender.com`
+   `https://railways-backend.onrender.com`
 
 ### Option B: Manual Web Service on Render
 1. Click **New +** → **Web Service**.
-2. Connect `Anvation-2026/RailMarga`.
+2. Connect `Pradyumna-jse/railways-`.
 3. Set the following parameters:
    - **Root Directory**: `server`
    - **Environment**: `Node`
@@ -45,23 +45,23 @@ Render automatically detects the [`render.yaml`](./render.yaml) blueprint in thi
 Vercel will build and serve the optimized static web bundle with instant global CDN caching.
 
 1. Go to [vercel.com](https://vercel.com/) and click **Add New...** → **Project**.
-2. Import the repository: `Anvation-2026/RailMarga`.
+2. Import the repository: `Pradyumna-jse/railways-`.
 3. Configure Project Settings:
    - **Framework Preset**: `Other`
-   - **Root Directory**: `./` *(or leave default root)*
+   - **Root Directory**: `./` *(leave default root)*
    - **Build Command**: `npm run build:web`
    - **Output Directory**: `mobile/dist`
 4. In **Environment Variables**, add:
-   - `EXPO_PUBLIC_API_URL`: `https://railmarga-backend.onrender.com` *(Replace with your actual Render URL from Part 1)*
+   - `EXPO_PUBLIC_API_URL`: `https://railways-backend.onrender.com` *(Replace with your actual Render URL from Part 1)*
 5. Click **Deploy**.
-6. Vercel will bundle the app and provide a live URL like `https://railmarga.vercel.app`.
+6. Vercel will bundle the app and provide a live URL like `https://railways-navigation.vercel.app`.
 
 ---
 
 ## 🚂 Alternate: Deploy Backend to Railway
 
 1. Go to [railway.app](https://railway.app/) and click **New Project** → **Deploy from GitHub repo**.
-2. Select `Anvation-2026/RailMarga`.
+2. Select `Pradyumna-jse/railways-`.
 3. In **Settings**:
    - **Root Directory**: `/server`
    - **Build Command**: `npm install && npm run build`
