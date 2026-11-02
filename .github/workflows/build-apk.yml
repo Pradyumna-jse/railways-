@@ -1,0 +1,65 @@
+name: Build TurnWise Android APK
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/build-apk.yml'
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    name: Build TurnWise Android App (.apk)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ☕ Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: 🟢 Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'mobile/package-lock.json'
+
+      - name: 🤖 Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 📦 Install Mobile Dependencies
+        run: |
+          cd mobile
+          npm ci || npm install
+
+      - name: ⚙️ Generate Native Android Project
+        run: |
+          cd mobile
+          npx expo prebuild --platform android --clean
+
+      - name: 🔨 Build Android APK (Debug / Release)
+        run: |
+          cd mobile/android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: 📦 Locate and Rename APK
+        run: |
+          mkdir -p release-apk
+          find mobile/android/app/build/outputs/apk -name "*.apk" -exec cp {} release-apk/TurnWise.apk \;
+          echo "TurnWise APK ready:"
+          ls -la release-apk/
+
+      - name: 🚀 Upload TurnWise APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TurnWise-Android-APK
+          path: release-apk/TurnWise.apk
+          retention-days: 30

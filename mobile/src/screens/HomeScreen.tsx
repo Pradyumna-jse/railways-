@@ -28,6 +28,7 @@ import { CityStationSelectorModal } from '../components/CityStationSelectorModal
 import { LiveTrainBoardModal } from '../components/LiveTrainBoardModal';
 import { BoardingSureModal } from '../components/BoardingSureModal';
 import { ArrivalSummaryModal } from '../components/ArrivalSummaryModal';
+import { InstallAppModal } from '../components/InstallAppModal';
 import { useBoardingSureStore } from '../store/boardingSureStore';
 import { AnimatedTrainTrackBackground } from '../components/AnimatedTrainTrackBackground';
 import { useNavigationStore } from '../store/navigationStore';
@@ -73,6 +74,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [cityModalVisible, setCityModalVisible] = useState(false);
   const [liveBoardModalVisible, setLiveBoardModalVisible] = useState(false);
   const [boardingSureModalVisible, setBoardingSureModalVisible] = useState(false);
+  const [installModalVisible, setInstallModalVisible] = useState(false);
   const [tappedEntity, setTappedEntity] = useState<TappedEntity | null>(null);
   const [selectedMapLevel, setSelectedMapLevel] = useState<number | 'all'>('all');
 
@@ -815,6 +817,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   <AlertIcon size={14} color="#D97706" />
                   <Text style={styles.alertActionText}>Truth Engine</Text>
                 </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.installActionBtn}
+                  onPress={() => setInstallModalVisible(true)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.installActionText}>📲 Install App</Text>
+                </TouchableOpacity>
               </View>
             </View>
           </View>
@@ -919,6 +929,37 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   </Text>
                 </View>
                 <Text style={styles.boardingSureArrow}>➔</Text>
+              </View>
+            </TouchableOpacity>
+
+            {/* DOWNLOAD TURNWISE MOBILE APP CARD */}
+            <TouchableOpacity
+              style={styles.downloadAppCard}
+              onPress={() => setInstallModalVisible(true)}
+              activeOpacity={0.85}
+            >
+              <View style={styles.downloadAppInner}>
+                <View style={styles.downloadAppIconCol}>
+                  <Text style={{ fontSize: 24 }}>📲</Text>
+                </View>
+                <View style={{ flex: 1, marginLeft: 10 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Text style={styles.downloadAppTitle}>
+                      {language === 'kn' ? 'TurnWise ಮೊಬೈಲ್ ಆ್ಯಪ್ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ' : (language === 'hi' ? 'TurnWise मोबाइल ऐप डाउनलोड करें' : 'Download TurnWise Mobile App')}
+                    </Text>
+                    <View style={styles.downloadAppBadge}>
+                      <Text style={styles.downloadAppBadgeText}>FREE APK / PWA</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.downloadAppSub}>
+                    {language === 'kn'
+                      ? 'ನಿಮ್ಮ ಮೊಬೈಲ್‌ನಲ್ಲಿ ಆಫ್‌ಲೈನ್ ನಕ್ಷೆಗಳೊಂದಿಗೆ ನೇರವಾಗಿ ಸ್ಥಾಪಿಸಿ'
+                      : (language === 'hi'
+                        ? 'अपने मोबाइल में ऑफ़लाइन मानचित्रों के साथ सीधे इंस्टॉल करें'
+                        : 'Install on your Android / iOS phone with offline station maps')}
+                  </Text>
+                </View>
+                <Text style={styles.downloadAppArrow}>➔</Text>
               </View>
             </TouchableOpacity>
 
@@ -1457,6 +1498,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         }}
         onOpenRescueMode={() => setRescueModalVisible(true)}
       />
+
+      {/* TURNWISE MOBILE APP INSTALL / DOWNLOAD MODAL */}
+      <InstallAppModal
+        visible={installModalVisible}
+        onClose={() => setInstallModalVisible(false)}
+      />
     </SafeAreaView>
   );
 };
@@ -1854,6 +1901,74 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     color: '#D97706'
+  },
+  installActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: Radii.pill,
+    backgroundColor: '#1E3A8A',
+    borderWidth: 1,
+    borderColor: '#3B82F6'
+  },
+  installActionText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#FFFFFF'
+  },
+  downloadAppCard: {
+    backgroundColor: '#EFF6FF',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1.5,
+    borderColor: '#3B82F6',
+    marginBottom: 10,
+    shadowColor: '#1E3A8A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2
+  },
+  downloadAppInner: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  downloadAppIconCol: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: '#DBEAFE',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  downloadAppTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1E3A8A'
+  },
+  downloadAppBadge: {
+    backgroundColor: '#1D4ED8',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 4
+  },
+  downloadAppBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#FFFFFF'
+  },
+  downloadAppSub: {
+    fontSize: 11,
+    color: '#3B82F6',
+    marginTop: 2
+  },
+  downloadAppArrow: {
+    fontSize: 14,
+    color: '#1D4ED8',
+    fontWeight: 'bold',
+    marginLeft: 8
   },
   scrollContent: {
     paddingVertical: 16,

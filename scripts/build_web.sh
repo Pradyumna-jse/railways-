@@ -37,7 +37,13 @@ else
   npx expo export -p web || npm run build:web
 fi
 
+# Run PWA setup & asset injection
+if [ -f "scripts/setup_pwa.js" ]; then
+  node scripts/setup_pwa.js
+elif [ -f "../scripts/setup_pwa.js" ]; then
+  node ../scripts/setup_pwa.js
+fi
+
 echo "=== Build Complete! Verified output directories ==="
 ls -la dist 2>/dev/null || true
 ls -la mobile/dist 2>/dev/null || true
-
