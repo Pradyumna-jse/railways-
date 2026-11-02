@@ -740,7 +740,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               <View style={styles.brandContainer}>
                 <View style={styles.brandTitleCol}>
                   <Text style={styles.brandMainTitle}>
-                    {language === 'kn' ? 'ಟರ್ನ್ ವೈಸ್ (Turn Wise)' : (language === 'hi' ? 'टर्न वाइज (Turn Wise)' : 'Turn Wise')}
+                    {language === 'kn' ? 'ಟರ್ನ್‌ವೈಸ್ (TurnWise)' : (language === 'hi' ? 'टर्नवाइज (TurnWise)' : 'TurnWise')}
                   </Text>
                   <Text style={styles.brandSubtitle}>
                     {(selectedStation?.name || selectedCity || 'KSR BENGALURU').toUpperCase()}

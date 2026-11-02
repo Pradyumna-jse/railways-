@@ -56,3 +56,4 @@ targetDirs.forEach((dir) => {
 });
 
 console.log('✅ PWA manifest, service worker, and icons configured in dist!');
+
