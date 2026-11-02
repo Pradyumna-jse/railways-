@@ -35,3 +35,4 @@ export function resolveDataDir(customPath?: string): string {
 
   return path.resolve(__dirname, '../../../data');
 }
+

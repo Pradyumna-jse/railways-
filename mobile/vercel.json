@@ -4,6 +4,14 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/api/:path*",
+      "destination": "https://server-pi-six-57.vercel.app/api/:path*"
+    },
+    {
+      "source": "/health",
+      "destination": "https://server-pi-six-57.vercel.app/health"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

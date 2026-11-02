@@ -10,29 +10,57 @@ import stationPlatformsData from '../data/realtime/station_platforms.json';
 import stationSchedulesData from '../data/realtime/station_schedules.json';
 import trainsBundle from '../data/realtime/trains_bundle.json';
 
-const ENV_BACKEND_URL = process.env.EXPO_PUBLIC_API_URL ? process.env.EXPO_PUBLIC_API_URL.replace(/\/+$/, '') : '';
 const PRODUCTION_BACKEND_URL = 'https://server-pi-six-57.vercel.app';
-const CANDIDATE_URLS = [
-  ENV_BACKEND_URL,
-  PRODUCTION_BACKEND_URL,
-  'http://localhost:3000',
-  'http://127.0.0.1:3000',
-  'http://10.0.2.2:3000'
-].filter(Boolean) as string[];
+
+function getCandidateUrls(): string[] {
+  const envUrl = process.env.EXPO_PUBLIC_API_URL ? process.env.EXPO_PUBLIC_API_URL.replace(/\/+$/, '') : '';
+  
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+    // When served over HTTPS in production, only use HTTPS backend URLs to prevent browser mixed-content blocks
+    return [envUrl, PRODUCTION_BACKEND_URL].filter((u): u is string => Boolean(u && u.startsWith('https://')));
+  }
+  
+  const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  if (isLocal) {
+    return [
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      envUrl,
+      PRODUCTION_BACKEND_URL
+    ].filter(Boolean) as string[];
+  }
+
+  return [
+    envUrl,
+    PRODUCTION_BACKEND_URL,
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://10.0.2.2:3000'
+  ].filter(Boolean) as string[];
+}
+
+function getDefaultBackendUrl(): string {
+  const envUrl = process.env.EXPO_PUBLIC_API_URL ? process.env.EXPO_PUBLIC_API_URL.replace(/\/+$/, '') : '';
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+    return (envUrl && envUrl.startsWith('https://')) ? envUrl : PRODUCTION_BACKEND_URL;
+  }
+  return envUrl || 'http://localhost:3000';
+}
 
 export class ApiService {
   private isOnlineState: boolean = true;
-  private backendBaseUrl: string = ENV_BACKEND_URL || PRODUCTION_BACKEND_URL;
+  private backendBaseUrl: string = getDefaultBackendUrl();
 
   constructor() {
     this.checkConnectivity();
   }
 
   public async checkConnectivity(): Promise<boolean> {
-    for (const url of CANDIDATE_URLS) {
+    const urls = getCandidateUrls();
+    for (const url of urls) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
         const res = await fetch(`${url}/health`, { signal: controller.signal });
         clearTimeout(timeoutId);
         if (res.ok) {
@@ -40,7 +68,9 @@ export class ApiService {
           this.isOnlineState = true;
           return true;
         }
-      } catch {}
+      } catch {
+        // Continue to next candidate
+      }
     }
     this.isOnlineState = false;
     return false;
@@ -48,6 +78,10 @@ export class ApiService {
 
   public get isOnline(): boolean {
     return this.isOnlineState;
+  }
+
+  public get backendUrl(): string {
+    return this.backendBaseUrl;
   }
 
   public setBackendUrl(url: string) {
@@ -111,52 +145,69 @@ export class ApiService {
     }));
   }
 
-  // 4. Calculate Route (Deterministic local router fallback + backend)
+  // 4. Calculate Route (Backend API first + Deterministic local router fallback)
   public async getRoute(
     startNodeId: string,
     destinationNodeId: string,
     profileId: string = 'first_time',
     blockedIds: string[] = []
   ): Promise<RouteResult | null> {
-    const local = localRouter.findRoute(startNodeId, destinationNodeId, profileId, blockedIds);
-    if (local) return local;
-
     if (this.isOnlineState) {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3500);
         const res = await fetch(`${this.backendBaseUrl}/api/route`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ startNodeId, destinationNodeId, profileId, blockedIds })
+          body: JSON.stringify({ startNodeId, destinationNodeId, profileId, blockedIds }),
+          signal: controller.signal
         });
-        if (res.ok) return await res.json();
-      } catch {}
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const remoteRoute = await res.json();
+          if (remoteRoute && remoteRoute.steps) {
+            return remoteRoute;
+          }
+        }
+      } catch (e) {
+        console.warn('Backend route calculation failed, using local router:', e);
+      }
     }
 
-    return null;
+    // High performance offline fallback
+    return localRouter.findRoute(startNodeId, destinationNodeId, profileId, blockedIds);
   }
 
-  // 5. SPECIFICATION 4: Train to Coach Navigation
+  // 5. SPECIFICATION 4: Train to Coach Navigation (Backend API first + offline fallback)
   public async getCoachRoute(
     startNodeId: string,
     trainNumber: string,
     coachNumber: string,
     profileId: string = 'first_time'
   ): Promise<RouteResult | null> {
-    const local = localRouter.findRouteToCoach(startNodeId, trainNumber, coachNumber, profileId);
-    if (local) return local;
-
     if (this.isOnlineState) {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3500);
         const res = await fetch(`${this.backendBaseUrl}/api/route/coach`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ startNodeId, trainNumber, coachNumber, profileId })
+          body: JSON.stringify({ startNodeId, trainNumber, coachNumber, profileId }),
+          signal: controller.signal
         });
-        if (res.ok) return await res.json();
-      } catch {}
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const remoteRoute = await res.json();
+          if (remoteRoute && remoteRoute.steps) {
+            return remoteRoute;
+          }
+        }
+      } catch (e) {
+        console.warn('Backend coach route calculation failed, using local router:', e);
+      }
     }
 
-    return null;
+    return localRouter.findRouteToCoach(startNodeId, trainNumber, coachNumber, profileId);
   }
 
   // 6. SPECIFICATION 3: Lost Passenger Rescue Mode
@@ -246,31 +297,37 @@ export class ApiService {
   }
 
   // 8. Dynamic Reroute
+  // 8. Dynamic Reroute (Backend API first + offline fallback)
   public async reroute(
     startNodeId: string,
     destinationNodeId: string,
     profileId: string,
     blockedLocationId: string
   ): Promise<RouteResult | null> {
-    const blocked = [blockedLocationId, `${blockedLocationId}_rev`];
-    const local = localRouter.findRoute(startNodeId, destinationNodeId, profileId, blocked);
-    if (local) return local;
-
     if (this.isOnlineState) {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3500);
         const res = await fetch(`${this.backendBaseUrl}/api/reroute`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ startNodeId, destinationNodeId, profileId, blockedLocationId })
+          body: JSON.stringify({ startNodeId, destinationNodeId, profileId, blockedLocationId }),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
         if (res.ok) {
           const data = await res.json();
-          return data.route;
+          if (data && data.route) {
+            return data.route;
+          }
         }
-      } catch {}
+      } catch (e) {
+        console.warn('Backend dynamic reroute failed, using local router:', e);
+      }
     }
 
-    return null;
+    const blocked = [blockedLocationId, `${blockedLocationId}_rev`];
+    return localRouter.findRoute(startNodeId, destinationNodeId, profileId, blocked);
   }
 
   // 9. Update Facility Status
